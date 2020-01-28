@@ -1,0 +1,32 @@
+[
+    {
+        "id": "home_button",
+        "name": "Home"
+    },
+    {
+        "id": "about_button",
+        "name": "About",
+        "subMenu": {
+            "about_us_button": "Us",
+            "about_site_button": "Site",
+            "about_you_button": "You"
+        }
+    },
+    {
+        "id": "services_button",
+        "name": "Services",
+        "subMenu": {
+            "services_first_button": "Services First",
+            "services_second_button": "Services Second",
+            "services_third_button": "Services Third"
+        }
+    },
+    {
+        "id": "portfolio_button",
+        "name": "Portfolio"
+    },
+    {
+        "id": "contact_button",
+        "name": "Contact"
+    }
+]

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+    <title>Fictive Company Blog</title>
+    <!-- Styles -->
+    <link rel="stylesheet" href="public/css/styles.css">
+    <!-- JQuery -->
+	<script type="text/javascript" src="public/scripts/jquery.js"></script>
+	<!-- Babel -->
+	<!-- <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script> -->
+	<!-- Scripts -->
+	<script type="text/javascript" src="public/scripts/cookie.js"></script>
+	<script type="text/javascript" src="public/scripts/main/content.js"></script>
+	<script type="text/javascript" src="public/scripts/main/authorization.js"></script>
+	<script type="text/javascript" src="public/scripts/main/main.js"></script>
+    <!-- React -->
+    <!-- <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script> -->
+    <!-- <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script> -->
+	<!-- React components -->
+	<!-- <script type="text/javascript" src="public/components/Button.js"></script> -->
+	<!-- React builder -->
+	<!-- <script type="text/javascript" src="public/components/react-builder.js"></script> -->
+</head>
+<body>
+	<header>
+		<hgroup>
+			<h1>Fictive Company Blog.
+				<% if (authorization !== null) { %>
+					Hello, <%= authorization.username %>!
+				<% } %>
+			</h1>
+			<h2>a blog showcasing the übercoolness of HTML5 &amp; CSS3</h2>
+		</hgroup>
+		<nav id="global">
+			<ul id="global_buttons">
+				<% for (var elem in globalButtons) {
+					have_sub_menu = 'subMenu' in globalButtons[elem] ? ' have_sub_menu' : ''; %>
+					<li id=<%=elem%> class="global_button<%=have_sub_menu%>">
+						<a><%=globalButtons[elem].name%></a>
+						<% if ('subMenu' in globalButtons[elem]) { %>
+							<ul class="sub_menu">
+							<% var subMenu = globalButtons[elem].subMenu;
+							for (var subMenuElem in subMenu) { %>
+								<li id=<%=subMenuElem%> class="global_button">
+									<a href=#><%=subMenu[subMenuElem]%></a>
+								</li>
+							<% } %>
+							</ul>
+						<% } %>
+					</li>
+				<% } %>
+			</ul>
+		</nav>
+	</header>
+	<div id="content">
+		<article id="page_options">
+			<header>
+				<div id="page_numbers" class="header_container">
+					<% for (var i = 1; i <= postsInfo.pagesCount; ++i) { %>
+						<div class="page_number">
+							<% if (i !== postsInfo.pageNumber) { %>
+								<a class="clickable"><%=i%></a>
+							<% }
+							else { %>
+								<a class="selected"><%=i%></a>
+							<% } %>
+						</div>
+					<% } %>
+				</div>
+			</header>
+			<header>
+				<div id="posts_display_counts" class="header_container">
+					<% for (var i in postsInfo.displayCount.options) {
+						var value = postsInfo.displayCount.options[i]; %>
+						<div class="posts_display_count">
+							<% if (value !== postsInfo.displayCount.value) { %>
+								<a class="clickable"><%=value%></a>
+							<% }
+							else { %>
+								<a class="selected"><%=value%></a>
+							<% } %>
+						</div>
+					<% } %>
+				</div>
+			</header>
+		</article>
+		<% for (var postNum in postsInfo.posts) { 
+			var post = postsInfo.posts[postNum]; %>
+			<article>
+				<header>
+					<div class="time">
+						<div class="year"><%=post.date.year%></div>
+						<div class="date"><%=post.date.day%>
+							<span><%=postsInfo.monthRus[post.date.month]%></span>
+						</div>
+					</div>
+					<h1><%=post.header%></h1>
+					<div class="comments"><%=post.comments_count%></div>
+				</header>
+				<p><%=post.description%></p>
+				<footer>
+					<em>Written by: </em><strong><%=post.username%></strong>
+					<span class="newLine">
+						<em>Tags: </em>
+						<% for (var tagNum in post.tags) {
+							var tag = post.tags[tagNum]; %>
+							<a href="#"><%=tag%></a>
+						<% } %>
+					</span>
+					<a href="#" class="button">Continue Reading</a>
+				</footer>
+			</article>
+		<% } %>
+	</div>
+	<aside>
+		<section id="authorization">
+			<h1>Sign In</h1>
+			<form id="authorization_form">
+				<div>
+					<span class="login">Login</span>
+					<input type="text" name="login" placeholder="username"/>
+				</div>
+				<div>
+					<span class="password">Password</span>
+					<input type="password" name="password" placeholder="password"/>
+				</div>
+				<% if (authorization !== null) { %>
+					<button id="log_out_button" type="submit">Log Out</button>
+				<% }
+				else { %>
+					<button id="sign_in_button" type="submit">Sign In</button>
+					<button id="sign_up_button" type="submit">Sign Up</button>
+				<% } %>
+			</form>
+		</section>
+		<nav>
+			<h1>Blogroll</h1>
+			<ul class="links">
+				<li><a href="#">A List of</a></li>
+				<li><a href="#">Friendly Blogs</a></li>
+				<li><a href="#">That have Exchanged</a></li>
+				<li><a href="#">Links with Us</a></li>
+			</ul>
+		</nav>
+		<section>
+			<blockquote>Плотину надо поднять. Рычагом. Я его дам. Канал надо завалить. Камнем. Камень я не дам.</blockquote>
+			<a class="twitterHandle" href="#">Ящер из Проклятых Земель</a>
+		</section>
+	</aside>
+</body>
+</html>

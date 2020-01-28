@@ -1,0 +1,18 @@
+{
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+        "module": "ES6",
+        "jsx": "react",
+        "noEmit": false,
+        "baseUrl": "../",
+        "paths": {
+            "*": ["node_modules/*"],
+            "@client/*": ["client/*"],
+            "@redux/*": ["client/redux/*"],
+            "@api/*": ["api/*"],
+            "@public/*": ["public/*"],
+            "@utils/*": ["utils/*"],
+        },
+    },
+    "include": ["**/*", "../utils"]
+}
