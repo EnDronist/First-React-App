@@ -21,6 +21,7 @@
     "include": [
         "client",
         "server",
+        "api",
     ],
     "exclude": [
         "node_modules",

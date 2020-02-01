@@ -1,9 +1,13 @@
-import { combineReducers } from 'redux';
+import { StoreState } from '@redux/State';
+import { combineReducers, ReducersMapObject } from 'redux';
 import authorization from '@redux/reducers/Authorization';
-import utils from '@redux/reducers/Utils';
+import postsInfo from '@redux/reducers/Posts';
 
-// Reducer
-export default combineReducers({
-    authorization,
-    utils,
-});
+/* Add any new reducer here */
+var allReducers: ReducersMapObject<StoreState> = {
+    authorization: authorization,
+    postsInfo: postsInfo,
+}
+
+// All reducers
+export default combineReducers(allReducers);

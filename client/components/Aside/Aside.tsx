@@ -1,19 +1,19 @@
 import React from 'react';
-const autoBind = require('react-autobind');
-const classNames = require('classnames');
+import classNames from 'classnames';
 import './Aside.scss';
 
-import Authorization from './Authorization'
+import Authorization from './Authorization';
 
-type State = {}
+export type State = {};
 
-export default class Aside extends React.Component<{}, State> {
-    constructor(props: {}) {
+type Props = {};
+
+export default class Aside extends React.Component<Props, State> {
+    constructor(props: Props) {
         super(props);
-        autoBind(this);
         this.state = {};
     }
-    render() {
+    render = () => {
         return (
             <aside>
                 <Authorization />
@@ -27,7 +27,7 @@ export default class Aside extends React.Component<{}, State> {
                     </ul>
                 </nav>
                 <section>
-                    <blockquote className="col-12">Плотину надо поднять. Рычагом. Я его дам. Канал надо завалить. Камнем. Камень я не дам.</blockquote>
+                    <blockquote className="col-12">Плотину надо поднять. Рычагом. Я его дам. Канал надо завалить камнем. Камень я не дам.</blockquote>
                     <a className="twitterHandle" href="#">Ящер из Проклятых Земель</a>
                 </section>
             </aside>

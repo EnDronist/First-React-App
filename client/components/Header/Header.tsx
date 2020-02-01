@@ -1,6 +1,5 @@
 import React, { Dispatch } from 'react';
-const autoBind = require('react-autobind');
-const classNames = require('classnames');
+import classNames from 'classnames';
 import './Header.scss';
 
 import { connect } from 'react-redux';
@@ -8,7 +7,7 @@ import { StoreState } from '@redux/State';
 import globalButtonsInfo from '@public/info/globalButtonsInfo.json';
 
 // State
-type State = {
+export type State = {
     isInit: boolean;
     globalButtons: Array<{
         id: string;
@@ -26,7 +25,6 @@ type Props = ReturnType<typeof mapStateToProps>;
 class Header extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
-        autoBind(this);
         this.state = {
             isInit: false,
             globalButtons: globalButtonsInfo,
@@ -34,14 +32,14 @@ class Header extends React.Component<Props, State> {
         // this.fetchButtons();
     }
 
-    async fetchButtons() {
+    fetchButtons = async () => {
         // const response = await fetch('public/info/globalButtonsInfo.json');
         // if (!response.ok) return console.log('Fetch error');
         // const data = await response.json();
         // this.setState({ globalButtons: data });
     }
 
-    render() {
+    render = () => {
         return (
             <header>
                 <hgroup>

@@ -1,19 +1,22 @@
-import { ActionFunction, ActionInput, ActionGroupTypes, ActionType } from '@redux/actions/types';
+import { ActionFunction, ActionInput, ActionType } from '@redux/actions/types';
 
 // Action group name
 export const GroupName = 'Authorization';
 
 // Action types
 export interface Types {
-    logIn: ActionType<{
-            username: string,
-        }, {
-            username: string,
+    logIn: ActionType<
+        {
+            username: string;
+        },
+        {
+            username: string;
         }
     >;
-    logOut: ActionType<{
-        }, {
-            username: string,
+    logOut: ActionType<
+        {},
+        {
+            username: string;
         }
     >;
     [key: string]: any;
@@ -23,9 +26,7 @@ export interface Types {
 export const Actions: { [key in keyof Types]: ActionFunction<typeof GroupName, key> } = {
     logIn: (args: ActionInput<typeof GroupName, 'logIn'>) => ({
         type: 'logIn',
-        data: {
-            username: args.username,
-        }
+        data: args
     }),
     logOut: () => ({
         type: 'logOut',

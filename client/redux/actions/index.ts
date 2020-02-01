@@ -1,11 +1,12 @@
-import { Action } from 'redux';
 import { ActionGroups } from '@redux/actions/types';
-import * as Authorization from './Authorization';
-import * as Utils from './Utils';
+import * as Authorization from '@redux/actions/Authorization';
+import * as Posts from '@redux/actions/Posts';
 
-const ActionClusters: ActionGroups = {
+// All actions
+/* Add any new actions here */
+const actionClusters: ActionGroups = {
     Authorization: Authorization.Actions,
-    Utils: Utils.Actions,
+    Posts: Posts.Actions,
 }
 
-export default ActionClusters;
+export default actionClusters;
