@@ -12,11 +12,19 @@ export default class UniqueArray<T> extends Array {
     get ids(): Readonly<Array<number>> { return this._ids }
 
     // Methods
-    constructor(array?: Array<T>) {
+    constructor(array?: Array<T> | UniqueArray<T>) {
         super();
         if (typeof(array) !== 'object') return;
-        this._ids = Array.from(Array(array.length).keys());
-        this._counter = super.push(...array);
+        if (array.constructor.name == Array.name) {
+            this._ids = Array.from(Array(array.length).keys());
+            this._counter = super.push(...array);
+        }
+        else if (array.constructor.name == UniqueArray.name) {
+            const uniqueArray = array as UniqueArray<T>;
+            this._ids = uniqueArray._ids;
+            this._counter = uniqueArray._counter;
+            super.push(...uniqueArray);
+        }
     }
     // Gets an array with numbers from 'start' to 'end'
     getRangeArray(start: number, end: number): Array<number> {
@@ -49,7 +57,7 @@ export default class UniqueArray<T> extends Array {
         return super.unshift(...items);
     }
     // Remove
-    remove(start: number, deleteCount?: number): Array<number> {
+    remove(start: number, deleteCount: number = 1): Array<number> {
         this._ids.splice(start, deleteCount);
         return super.splice(start, deleteCount);
     }

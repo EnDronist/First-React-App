@@ -36,23 +36,69 @@ header, nav, article, aside, footer, hgroup, section { display: block }
 
 /* Typography */
 html {
-	background-color: #81aeab;
-	background-image: linear-gradient(top, #71a4a1 0%, #81aeab 20%);
+	animation-name: color-transfusion;
+	animation-duration: 120s;
+	animation-timing-function: ease-in-out;
+	animation-iteration-count: infinite;
 }
 body {
 	width: 960px;
-    margin: 0 auto;
-    background-color: transparent;
-	color: #333;
-	font: 12px/18px Corbel, Arial, Helvetica, sans-serif;
+	margin: 0 auto;
+	background-color: transparent;
 	text-align: justify;
+	font: 12px/18px Corbel, Arial, Helvetica, sans-serif;
 }
 
 p { margin-bottom: 18px }
-
 strong { font-weight: bold }
 em { font-style: italic }
-
 h1 { font: 24px/36px "Trebuchet MS", Arial, Helvetica, sans-serif }
 
-.newLine { display: block }
+// Animations
+@keyframes color-transfusion {
+	// Blue
+	0% {
+		box-shadow: 0 300px 200px -100px rgb(96, 170, 158) inset;
+		background: rgb(96, 170, 158);
+	}
+	// Green top
+	10% {
+		box-shadow: 0 300px 200px -100px rgb(80, 149, 80) inset;
+		background: rgb(96, 170, 158);
+	}
+	// Green
+	25% {
+		box-shadow: 0 300px 200px -100px rgb(80, 149, 80) inset;
+		background: rgb(80, 149, 80);
+	}
+	// Yellow top
+	35% {
+		box-shadow: 0 300px 200px -100px rgb(168, 182, 89) inset;
+		background: rgb(80, 149, 80);
+	}
+	// Yellow
+	50% {
+		box-shadow: 0 300px 200px -100px rgb(168, 182, 89) inset;
+		background: rgb(168, 182, 89);
+	}
+	// Orange top
+	60% {
+		box-shadow: 0 300px 200px -100px rgb(182, 146, 89) inset;
+		background: rgb(168, 182, 89);
+	}
+	// Orange
+	75% {
+		box-shadow: 0 300px 200px -100px rgb(182, 146, 89) inset;
+		background: rgb(182, 146, 89);
+	}
+	// Blue top
+	85% {
+		box-shadow: 0 300px 200px -100px rgb(96, 170, 158) inset;
+		background: rgb(182, 146, 89);
+	}
+	// Blue
+	100% {
+		box-shadow: 0 300px 200px -100px rgb(96, 170, 158) inset;
+		background: rgb(96, 170, 158);
+	}
+}

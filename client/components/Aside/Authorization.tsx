@@ -1,7 +1,8 @@
 import React, { FormEvent, Dispatch } from 'react';
-const autoBind = require('react-autobind');
-const classNames = require('classnames');
+import classNames from 'classnames';
 import './Authorization.scss';
+
+import { verification, LoginAttempt } from '@api/authorization';
 
 import { Actions, GroupName } from '@redux/actions/Authorization';
 import { ActionData, ActionInput, ActionGroupTypes } from '@redux/actions/types';
@@ -10,7 +11,7 @@ import { connect } from 'react-redux';
 import { ValueOf } from '@utils/types';
 
 // State
-type State = {
+export type State = {
     authorization: boolean;
     signTypes: Readonly<{
         [key in 'signIn' | 'signUp' | 'logOut' ]: {
@@ -20,14 +21,14 @@ type State = {
     }>;
     signType: ValueOf<State['signTypes']> | null;
     inputs: {
-        [key in 'login' | 'password']: {
-            name: string;
+        [key in keyof typeof verification]: {
+            name: key;
             value: string;
             className: {
                 incorrect: boolean;
                 [key: string]: any;
             };
-            check: (str: any) => any;
+            check: (str: string) => boolean;
         };
     };
     errorDescription: string | null;
@@ -40,7 +41,6 @@ type Props = ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchT
 class Authorization extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
-        autoBind(this);
         this.state = {
             authorization: false,
             signTypes: Object.freeze({
@@ -65,7 +65,7 @@ class Authorization extends React.Component<Props, State> {
                     className: {
                         incorrect: false,
                     },
-                    check: str => str.match(/^[a-zA-Z][a-zA-Z0-9-]{3,31}$/),
+                    check: str => verification['login'].test(str),
                 },
                 password: {
                     name: 'password',
@@ -73,27 +73,34 @@ class Authorization extends React.Component<Props, State> {
                     className: {
                         incorrect: false,
                     },
-                    check: str => str.match(/^[a-zA-Z0-9_-]{8,32}$/),
+                    check: str => verification['password'].test(str),
                 },
             },
             errorDescription: null,
         };
+        this.loginAttempt();
     }
 
-    async componentDidMount() {}
+    loginAttempt = async () => {
+        var responce = await fetch('/authorization', { method: 'GET' });
+        if (!responce.ok) return;
+        var data: LoginAttempt['res'] = await responce.json();
+        console.log(data);
+        this.props.logIn({ username: data.username });
+    }
 
-    changeType(type: keyof State['signTypes']) {
+    changeType = (type: keyof State['signTypes']) => {
         this.setState({ signType: this.state.signTypes[type] });
     }
 
-    onChange(event: any) {
+    onChange = (event: any) => {
         const input = this.state.inputs[event.target.name as keyof State['inputs']];
         input.className.incorrect = !(input.check(event.target.value) || event.target.value == '');
         input.value = event.target.value;
         this.forceUpdate();
     }
 
-    async onSubmit(event: FormEvent) {
+    onSubmit = async (event: FormEvent) => {
         event.preventDefault();
         const signType = this.state.signType;
         const inputs = this.state.inputs;
@@ -174,42 +181,36 @@ class Authorization extends React.Component<Props, State> {
         }
     }
 
-    render() {
+    render = () => {
         const authorization = this.state.authorization;
         const inputs = this.state.inputs;
         return (
             <section id="authorization">
                 <h1>Authorization</h1>
                 <form id="authorization_form" onSubmit={this.onSubmit}>
-                    {/* Login input */}
-                    <div className="d-flex justify-content-between align-items-center">
-                        <span className="login col-4 text-center align-middle">Login</span>
-                        <div className="col-8 d-flex align-items-center">
-                            <input className={ classNames(inputs['login'].className, "col-12") }
-                                type="text" name="login" placeholder="username"
-                                onChange={this.onChange}
-                            />
-                        </div>
-                    </div>
-                    {/* Password input */}
-                    <div className="d-flex justify-content-between align-items-center">
-                        <span className="password col-4 text-center align-middle">Password</span>
-                        <div className="col-8 d-flex align-items-center">
-                            <input className={ classNames(inputs['password'].className, "col-12") }
-                                type="password" name="password" placeholder="password"
-                                onChange={this.onChange}
-                            />
-                        </div>
-                    </div>
-                    {/* Authorization buttons */}
-                    { this.props.loggedIn ? (
-                        <div id="authorization_buttons" className="d-flex justify-content-between align-items-center">
-                            <div className="authorization_button col-12">
-                                <button id="log_out_button" className="btn btn-success btn-block"
-                                    type="submit" onClick={() => this.changeType('logOut')}>Log Out</button>
+                    { !this.props.loggedIn ? (
+                        <>
+                        {/* Login input */}
+                        <div className="d-flex justify-content-between align-items-center">
+                            <span className="login col-4 text-center align-middle">Login</span>
+                            <div className="col-8 d-flex align-items-center">
+                                <input className={ classNames(inputs['login'].className, "col-12") }
+                                    type="text" name="login" placeholder="username"
+                                    onChange={this.onChange}
+                                />
                             </div>
                         </div>
-                    ) : (
+                        {/* Password input */}
+                        <div className="d-flex justify-content-between align-items-center">
+                            <span className="password col-4 text-center align-middle">Password</span>
+                            <div className="col-8 d-flex align-items-center">
+                                <input className={ classNames(inputs['password'].className, "col-12") }
+                                    type="password" name="password" placeholder="password"
+                                    onChange={this.onChange}
+                                />
+                            </div>
+                        </div>
+                        {/* Authorization buttons */}
                         <div id="authorization_buttons" className="d-flex justify-content-between align-items-center">
                             <div className="authorization_button col-6">
                                 <button id="sign_in_button" className="btn btn-success btn-block"
@@ -220,6 +221,17 @@ class Authorization extends React.Component<Props, State> {
                                     type="submit" onClick={() => this.changeType('signUp')}>Sign Up</button>
                             </div>
                         </div>
+                        </>
+                    ) : (
+                        <>
+                        {/* Log out button */}
+                        <div id="authorization_buttons" className="d-flex justify-content-between align-items-center">
+                            <div className="authorization_button col-12">
+                                <button id="log_out_button" className="btn btn-success btn-block"
+                                    type="submit" onClick={() => this.changeType('logOut')}>Log Out</button>
+                            </div>
+                        </div>
+                        </>
                     )}
                     {/* Error description */}
                     { this.state.errorDescription != null && (

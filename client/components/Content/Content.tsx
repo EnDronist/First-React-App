@@ -1,89 +1,97 @@
+// React
 import React, { Fragment } from 'react';
-const autoBind = require('react-autobind');
-const classNames = require('classnames');
+import classNames from 'classnames';
 import './Content.scss';
-
+// 
 import { Route, Link, BrowserRouter as Router } from 'react-router-dom';
 import ContentPost from './ContentPost';
 import UniqueArray from '@utils/UniqueArray';
-import getUrlParams from '@utils/url-params';
+import { fromUrlParams, mergeUrlParams } from '@utils/url-params';
 import getRangeArray from '@utils/range-array';
-
+// JSON
 import postsInfo from '@public/info/postsInfo.json';
-
-import { Posts } from '@api/content';
-import { ArrayValue } from '@utils/types';
+// Redux
 import { StoreState } from '@redux/State';
 import { connect } from 'react-redux';
+// Types
+import { PostsAPI } from '@api/content/content';
+import { GroupName, Actions } from '@client/redux/actions/Posts';
+import { ActionData, ActionInput } from '@client/redux/actions/types';
+import { Dispatch } from 'redux';
+import ContentCreatePost from './ContentCreatePost';
 
-type State = {
+export type State = {
     postsOptions: {
         postsCount: number;
         pageNumber: number;
+        pageButtonFocus: number;
         displayCount: number;
+        // Constants
+        pageButtonsRange: 2,
         displayCounts: Readonly<typeof postsInfo.displayCount.options>;
+        // Additional info
+        pageButtonStart: () => number;
+        pageButtonEnd: () => number;
+        pagesCount: () => number;
+        pageButtonFocusMin: () => number;
+        pageButtonFocusMax: () => number;
+        getPageButtonFocus: (value: number) => number;
     }
-    posts: UniqueArray<ContentPost['props']['options']>;
 }
 
-type Props = ReturnType<typeof mapStateToProps>;
+type Props = ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchToProps>;
 
 class Content extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
-        autoBind(this);
-        var urlParams: Posts['url'] = getUrlParams(new URLSearchParams(window.location.search).entries());
+        var urlParams: PostsAPI['url'] = fromUrlParams();
         this.state = {
             postsOptions: {
                 postsCount: 0,
+                pageButtonFocus: 2,
+                pageButtonsRange: 2,
                 pageNumber: urlParams.postsPageNumber || postsInfo.pageNumber.default,
                 displayCount: urlParams.postsDisplayCount || postsInfo.displayCount.default,
                 displayCounts: postsInfo.displayCount.options,
+                pageButtonStart: () => {
+                    var pageButtonStart = this.state.postsOptions.pageButtonFocus - this.state.postsOptions.pageButtonsRange;
+                    if (pageButtonStart < 1) pageButtonStart = 1;
+                    return pageButtonStart;
+                },
+                pageButtonEnd: () => {
+                    var pageButtonEnd = this.state.postsOptions.pageButtonFocus + this.state.postsOptions.pageButtonsRange
+                    var pagesCount = this.state.postsOptions.pagesCount();
+                    if (pageButtonEnd > pagesCount) pageButtonEnd = pagesCount;
+                    return pageButtonEnd;
+                },
+                pagesCount: () => (
+                    Math.ceil(this.state.postsOptions.postsCount / this.state.postsOptions.displayCount)
+                ),
+                pageButtonFocusMin: () => (
+                    this.state.postsOptions.pageButtonsRange + 2
+                ),
+                pageButtonFocusMax: () => (
+                    this.state.postsOptions.pagesCount() - this.state.postsOptions.pageButtonsRange - 1
+                ),
+                getPageButtonFocus: (value: number) => {
+                    let pageButtonFocusMin = this.state.postsOptions.pageButtonFocusMin();
+                    let pageButtonFocusMax = this.state.postsOptions.pageButtonFocusMax();
+                    return value < pageButtonFocusMin ? pageButtonFocusMin
+                        : value > pageButtonFocusMax ? pageButtonFocusMax
+                        : value;
+                },
             },
-            posts: new UniqueArray(),
         };
-        this.init();
-    }
-    async init() {
         this.fetchPosts();
-        return;
-        var timeout = 2000;
-        console.log(this.state.posts);
-        var posts = this.state.posts;
-        await new Promise(resolve => { setTimeout(resolve, timeout) });
-        // posts.push({
-        //     options: {
-        //         value: 'New',
-        //     },
-        // });
-        this.forceUpdate();
-        console.log(posts);
-
-        await new Promise(resolve => { setTimeout(resolve, timeout) });
-        posts[posts.length - 1].options.value = 'Word';
-        this.forceUpdate();
-        console.log(posts);
-
-        await new Promise(resolve => { setTimeout(resolve, timeout) });
-        posts.remove(1, 1);
-        this.forceUpdate();
-        console.log(posts);
-
-        await new Promise(resolve => { setTimeout(resolve, timeout) });
-        this.forceUpdate();
-        console.log(posts);
-        await new Promise(resolve => { setTimeout(resolve, timeout) });
-        posts.remove(2, 2);
-        this.forceUpdate();
-        console.log(posts);
     }
-    async fetchPosts(): Promise<void> {
+
+    fetchPosts = async (): Promise<void> => {
         // Fetching posts
-        var reqData: Posts['req'] = {
+        var reqData: PostsAPI['req'] = {
             pageNumber: this.state.postsOptions.pageNumber,
             displayCount: this.state.postsOptions.displayCount,
         };
-        var responce = await fetch('api/posts', {
+        var responce = await fetch('/api/posts', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -93,55 +101,92 @@ class Content extends React.Component<Props, State> {
         });
         if (!responce.ok) return;
         // Saving posts
-        var resData = await responce.json() as Posts['res'];
-        const posts = this.state.posts;
+        var resData = await responce.json() as PostsAPI['res'];
+        const posts = this.props.posts;
         posts.clear();
         posts.push(...resData.posts);
+        this.props.setPosts(posts);
         // Changing posts options
         const postsOptions = this.state.postsOptions;
         postsOptions.postsCount = resData.postsCount;
+        postsOptions.pageButtonFocus = postsOptions.getPageButtonFocus(postsOptions.pageNumber);
         this.forceUpdate();
     }
-    calculatePageNumber(newDisplayCount: number): number {
+
+    calculatePageNumber = (newDisplayCount: number): number => {
         const postsOptions = this.state.postsOptions;
         let firstPostNumber = (postsOptions.pageNumber - 1) * postsOptions.displayCount + 1;
         return Math.floor((firstPostNumber - 1) / newDisplayCount + 1);
     }
-    changePostsOptions(options: { postsPageNumber?: number, postsDisplayCount?: number }): void {
+    
+    changePostsOptions = (options: { pageNumber?: number, displayCount?: number, pageButtonFocus?: number }): void => {
         const postsOptions = this.state.postsOptions;
         // Updating posts options
-        postsOptions.pageNumber = options.postsPageNumber != undefined ? options.postsPageNumber : postsOptions.pageNumber;
-        postsOptions.displayCount = options.postsDisplayCount != undefined ? options.postsDisplayCount : postsOptions.displayCount;
+        if (options.pageNumber != undefined) 
+        postsOptions.pageNumber = options.pageNumber != undefined ? options.pageNumber : postsOptions.pageNumber;
+        postsOptions.displayCount = options.displayCount != undefined ? options.displayCount : postsOptions.displayCount;
+        postsOptions.pageButtonFocus = options.pageButtonFocus != undefined ? postsOptions.getPageButtonFocus(options.pageButtonFocus) : postsOptions.pageButtonFocus;
         this.forceUpdate();
-        this.fetchPosts();
     }
-    render() {
-        const { posts, postsOptions } = this.state;
+
+    render = () => {
+        const { postsOptions } = this.state;
+        const { posts } = this.props;
+        var pageButtonFocusMin = postsOptions.pageButtonFocusMin();
+        var pageButtonFocusMax = postsOptions.pageButtonFocusMax();
+        var pageButtonStart = postsOptions.pageButtonStart();
+        var pageButtonEnd = postsOptions.pageButtonEnd();
+        var pagesCount = postsOptions.pagesCount();
         return (
             <Router>
                 <div id="content">
                     <article id="page_options">
                         <header className="col-8">
                             <div id="page_numbers" className="d-flex justify-content-start align-items-center">
-                                <span key="-1">Page:</span>
+                                <span>Page:</span>
                                 <ul className="d-flex justify-content-start align-items-center">
-                                { getRangeArray(1, Math.ceil(postsOptions.postsCount / postsOptions.displayCount)).map(value => (
-                                    <li key={value} className={`page_number${value == postsOptions.pageNumber ? " selected" : " clickable"}`}>
+                                { pageButtonStart > 1 + 1 && (
+                                    <li key={pageButtonStart - 1} className={classNames('page_number', "clickable")}>
+                                    <div className={`p-1 align-items-center`}
+                                        onClick={() => this.changePostsOptions({ pageButtonFocus: postsOptions.pageButtonFocus - 1 })}
+                                    >
+                                        <span>{'<'}</span>
+                                    </div>
+                                    </li>
+                                )}
+                                { getRangeArray(pageButtonStart <= 1 + 1 ? 1 : pageButtonStart, pageButtonEnd >= pagesCount - 1 ? pagesCount : pageButtonEnd).map(value => (
+                                    <li key={value} className={classNames('page_number', value == postsOptions.pageNumber ? " selected" : " clickable")}>
                                         { value != postsOptions.pageNumber && (
-                                            <Link to={`/?postsPageNumber=${value}&postsDisplayCount=${postsOptions.displayCount}`}
-                                                onClick={() => this.changePostsOptions({ postsPageNumber: value })}
+                                            <Link to={mergeUrlParams({ postsPageNumber: value, postsDisplayCount: postsOptions.displayCount })}
+                                                onClick={() => {
+                                                    this.changePostsOptions({ pageNumber: value })
+                                                    this.fetchPosts();
+                                                }}
                                             > 
                                                 <div className={`p-1 align-items-center`}>
-                                                    <span>{value}</span>
+                                                    <span style={{ fontSize: `${24 - 2.5 * `${value}`.length}px` }}>
+                                                        {value}
+                                                    </span>
                                                 </div>
                                             </Link>
                                         ) || (
                                             <div className={`p-1 align-items-center`}>
-                                                <span>{value}</span>
+                                                <span style={{ fontSize: `${24 - 2.5 * `${value}`.length}px` }}>
+                                                    {value}
+                                                </span>
                                             </div>
                                         ) }
                                     </li>
                                 )) }
+                                { pageButtonEnd < pagesCount - 1 && (
+                                    <li key={pageButtonEnd + 1} className={classNames('page_number', "clickable")}>
+                                        <div className={`p-1 align-items-center`}
+                                            onClick={() => this.changePostsOptions({ pageButtonFocus: postsOptions.pageButtonFocus + 1 })}
+                                        >
+                                            <span>{'>'}</span>
+                                        </div>
+                                    </li>
+                                )}
                                 </ul>
                             </div>
                         </header>
@@ -154,11 +199,14 @@ class Content extends React.Component<Props, State> {
                                     return (
                                         <li key={i} className={`posts_display_count${elem == postsOptions.displayCount ? " selected" : " clickable"}`}>
                                             { elem != postsOptions.displayCount && (
-                                                <Link to={`/?postsPageNumber=${newPageNumber}&postsDisplayCount=${elem}`}
-                                                    onClick={() => this.changePostsOptions({
-                                                        postsPageNumber: newPageNumber,
-                                                        postsDisplayCount: elem,
-                                                    })}
+                                                <Link to={mergeUrlParams({ postsPageNumber: newPageNumber, postsDisplayCount: elem })}
+                                                    onClick={() => {
+                                                        this.changePostsOptions({
+                                                            pageNumber: newPageNumber,
+                                                            displayCount: elem,
+                                                        });
+                                                        this.fetchPosts();
+                                                    }}
                                                 > 
                                                     <div className={`p-1 align-items-center`}>
                                                         <span>{elem}</span>
@@ -176,25 +224,11 @@ class Content extends React.Component<Props, State> {
                             </div>
                         </header>
                     </article>
-                    { this.state.posts.map((elem, i) =>
+                    { this.props.posts.map((elem, i) =>
                         <ContentPost key={posts.ids[i]} options={elem} />
                     ) }
-                    { /* this.props.loggedIn */ true && (
-                        <article id="create_post">
-                            <form>
-                                {this.props.username}
-                                <div className="form-group">
-                                    <label htmlFor="headerInput">Header</label>
-                                    <input id="headerInput" className="form-control"
-                                        type="text" name="header"placeholder="Enter header"></input>
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="descriptionInput">Description</label>
-                                    <input id="descriptionInput" className="form-control"
-                                        type="text" name="description" placeholder="Enter description"></input>
-                                </div>
-                            </form>
-                        </article>
+                    { this.props.loggedIn && (
+                        <ContentCreatePost />
                     ) }
                 </div>
             </Router>
@@ -204,9 +238,16 @@ class Content extends React.Component<Props, State> {
 
 // State to Props
 const mapStateToProps = (state: StoreState) => ({
-    username: state?.authorization?.username,
+    // Authorization
     loggedIn: state?.authorization?.loggedIn,
+    // Posts
+    posts: state?.postsInfo?.posts,
+});
+
+// Dispatch to Props
+const mapDispatchToProps = (dispatch: Dispatch<ActionData<typeof GroupName>>) => ({
+    setPosts: (args: ActionInput<typeof GroupName, 'setPosts'>) => dispatch(Actions.setPosts(args)),
 });
 
 // React-Redux-component
-export default connect(mapStateToProps)(Content);
+export default connect(mapStateToProps, mapDispatchToProps)(Content);
