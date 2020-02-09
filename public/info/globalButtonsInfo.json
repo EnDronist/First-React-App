@@ -1,7 +1,7 @@
 [
     {
-        "id": "home_button",
-        "name": "Home"
+        "id": "posts_button",
+        "name": "Posts"
     },
     {
         "id": "about_button",

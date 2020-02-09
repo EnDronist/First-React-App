@@ -66,7 +66,7 @@ article.post {
             }
         }
         .right {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
             float: right;
             text-align: center;
@@ -122,7 +122,10 @@ article.post {
             border-radius: 10px;
         }
     }
-    .description { margin: 6px; }
+    p.description {
+        font-size: 16px;
+        margin: 6px;
+    }
     footer {
         .new_line { display: block }
     }
@@ -131,7 +134,7 @@ article.post {
         padding: 0 3px;
         margin-right: 3px;
         font-variant: small-caps;
-        font-size: 14px;
+        font-size: 16px;
         border-radius: 3px;
         -moz-border-radius: 3px;
         -webkit-border-radius: 3px;
@@ -140,6 +143,12 @@ article.post {
             color: #ddd;
             border: none;
         }
+    }
+    em {
+        font-size: 14px;
+    }
+    strong {
+        font-size: 16px;
     }
     .button {
         display: block;

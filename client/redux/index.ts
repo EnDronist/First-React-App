@@ -1,7 +1,8 @@
-import { createStore, compose } from 'redux';
-import reducers from '@redux/reducers';
-import Actions from '@redux/actions';
+import { createStore, compose, applyMiddleware } from 'redux';
+import getReducers from '@redux/reducers';
 import { initialState } from '@redux/State';
+import { createBrowserHistory } from 'history';
+import { routerMiddleware } from 'connected-react-router';
 
 declare global {
     interface Window {
@@ -9,10 +10,22 @@ declare global {
     }
 }
 
+// Redux DevTools
 var __DEV__: boolean = process.env.NODE_ENV == 'development';
 const composeEnhancers = (__DEV__ && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__) || compose;
 
+// Browser history
+export const history = createBrowserHistory();
+
 export default () => {
-    const store = createStore(reducers, initialState, composeEnhancers());
+    const store = createStore(
+        getReducers(history),
+        initialState,
+        composeEnhancers(
+            applyMiddleware(
+                routerMiddleware(history),
+            )
+        )
+    );
     return store;
 };

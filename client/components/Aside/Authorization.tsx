@@ -1,14 +1,17 @@
+// React
 import React, { FormEvent, Dispatch } from 'react';
+// API
+import { verification, LoginAttempt } from '@api/authorization';
+// Redux
+import { connect } from 'react-redux';
+import { Actions, GroupName } from '@redux/actions/Authorization';
+import { ActionData, ActionInput } from '@redux/actions/types';
+import { StoreState } from '@redux/State';
+// Utils
+import { ValueOf } from '@utils/types';
+// Misc
 import classNames from 'classnames';
 import './Authorization.scss';
-
-import { verification, LoginAttempt } from '@api/authorization';
-
-import { Actions, GroupName } from '@redux/actions/Authorization';
-import { ActionData, ActionInput, ActionGroupTypes } from '@redux/actions/types';
-import { StoreState } from '@redux/State';
-import { connect } from 'react-redux';
-import { ValueOf } from '@utils/types';
 
 // State
 export type State = {
@@ -126,7 +129,6 @@ class Authorization extends React.Component<Props, State> {
                 new Uint8Array(uglyCryptedPassword),
                 (x: number) => ('00' + x.toString(16)).slice(-2)
             ).join('');
-            
             if (signType == null) {
                 console.log('POST URL is not specified.');
                 return;

@@ -1,17 +1,18 @@
 // React
 import React from 'react';
-import classNames from 'classnames';
-import './ContentPost.scss'
-// Public
-import postsInfo from '@public/info/postsInfo.json';
 // API
 import { DeletePostAPI } from '@api/content/delete-post';
+// Public
+import postsInfo from '@public/info/postsInfo.json';
 // Redux
 import { Dispatch } from 'redux';
 import { connect } from 'react-redux';
 import { StoreState } from '@redux/State';
 import { ActionData, ActionInput } from '@redux/actions/types';
 import { GroupName, Actions } from '@redux/actions/Posts';
+// Misc
+import classNames from 'classnames';
+import './ContentPost.scss';
 
 export type State = {
     id: number;

@@ -1,7 +1,8 @@
 import ContentPost, { State as ContentPostState } from '@client/components/Content/ContentPost';
 import UniqueArray from '@utils/UniqueArray';
+import { RouterState, connectRouter } from 'connected-react-router';
 
-// InitialState
+// Redux store state
 export type StoreState = {
     authorization: {
         username: string;
@@ -9,8 +10,10 @@ export type StoreState = {
     };
     postsInfo: {
         posts: UniqueArray<ContentPostState>;
-    }
+    };
+    router?: RouterState;
 };
+
 export const initialState: StoreState = {
     authorization: {
         username: '',

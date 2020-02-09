@@ -1,10 +1,11 @@
+// React
 import React from 'react';
-import classNames from 'classnames';
-import './App.scss'
-
 import Header from './Header/Header'
 import Content from './Content/Content'
 import Aside from './Aside/Aside'
+// Misc
+import classNames from 'classnames';
+import './App.scss'
 
 type State = {}
 
@@ -15,12 +16,10 @@ export default class App extends React.Component<{}, State> {
     }
     
     render = () => {
-        return (
-            <div id="react_app">
-                <Header />
-                <Content />
-                <Aside />
-            </div>
-        );
+        return (<>
+            <Header />
+            <Content />
+            <Aside />
+        </>);
     }
 }

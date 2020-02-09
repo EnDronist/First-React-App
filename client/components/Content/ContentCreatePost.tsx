@@ -1,17 +1,18 @@
 // React
 import React, { ChangeEvent } from 'react';
-import classNames from 'classnames';
-import './ContentCreatePost.scss';
 // API
 import { verification, CreatePostAPI } from '@api/content/create-post';
 // Redux
 import { connect } from 'react-redux';
-// Types
 import { Dispatch } from 'redux';
 import { StoreState } from '@redux/State';
 import { ActionData, ActionInput } from '@redux/actions/types';
 import { GroupName, Actions } from '@redux/actions/Posts';
+// Utils
 import { WithRequiredKeys } from '@utils/types';
+// Misc
+import classNames from 'classnames';
+import './ContentCreatePost.scss';
 
 export type State = {
     inputs: {

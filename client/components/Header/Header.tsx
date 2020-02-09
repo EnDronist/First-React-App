@@ -1,10 +1,13 @@
-import React, { Dispatch } from 'react';
-import classNames from 'classnames';
-import './Header.scss';
-
+// React
+import React from 'react';
+// JSON
+import globalButtonsInfo from '@public/info/globalButtonsInfo.json';
+// Redux
 import { connect } from 'react-redux';
 import { StoreState } from '@redux/State';
-import globalButtonsInfo from '@public/info/globalButtonsInfo.json';
+// Misc
+import classNames from 'classnames';
+import './Header.scss';
 
 // State
 export type State = {
