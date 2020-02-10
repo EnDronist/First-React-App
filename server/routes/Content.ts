@@ -4,7 +4,7 @@ import mysql from 'promise-mysql';
 import asyncHandler from 'express-async-handler';
 
 import validate from '@utils/validate';
-import { PostsAPI, verification as contentVerification } from '@api/content/content';
+import { PostsAPI, reqVerification as contentVerification } from '@api/content/content';
 import { CreatePostAPI, verification as createPostVerification } from '@api/content/create-post';
 import { DeletePostAPI, verification as deletePostVerification } from '@api/content/delete-post';
 
@@ -100,7 +100,6 @@ export default function (app: Express.Application): void {
                     `select last_insert_id();`
                 ))[0]['last_insert_id()'],
         }
-        console.log(responce);
         // Event announcement
         console.log(`Post #${`${responce.id}`.blue} was created by ${req.session.authorization.username.green}`);
         // Responce

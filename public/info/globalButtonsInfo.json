@@ -1,24 +1,40 @@
 [
     {
         "id": "posts_button",
-        "name": "Posts"
+        "name": "Posts",
+        "url": "/posts"
     },
     {
         "id": "about_button",
         "name": "About",
         "subMenu": {
-            "about_us_button": "Us",
-            "about_site_button": "Site",
-            "about_you_button": "You"
+            "about_us_button": {
+                "name": "Us",
+                "url": "/about/us"
+            },
+            "about_site_button": {
+                "name": "Site",
+                "url": "/about/site"
+            },
+            "about_you_button": {
+                "name": "You",
+                "url": "/about/you"
+            }
         }
     },
     {
         "id": "services_button",
         "name": "Services",
         "subMenu": {
-            "services_first_button": "Services First",
-            "services_second_button": "Services Second",
-            "services_third_button": "Services Third"
+            "services_first_button": {
+                "name": "Services First"
+            },
+            "services_second_button": {
+                "name": "Services Second"
+            },
+            "services_third_button": {
+                "name": "Services Third"
+            }
         }
     },
     {

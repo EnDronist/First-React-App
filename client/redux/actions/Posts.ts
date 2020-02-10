@@ -1,5 +1,5 @@
 import { ActionFunction, ActionInput, ActionType } from '@redux/actions/types';
-import ContentPost, { State as ContentPostState } from '@client/components/Content/ContentPost';
+import { State as PostsState } from '@client/components/Content/Posts/SmallPost';
 import UniqueArray from '@utils/UniqueArray';
 
 // Action group name
@@ -9,10 +9,9 @@ export const GroupName = 'Posts';
 export type Types = {
     // // Add
     setPosts: ActionType<
-        UniqueArray<ContentPostState>,
-        UniqueArray<ContentPostState>
+        UniqueArray<PostsState>,
+        UniqueArray<PostsState>
     >;
-    // inspectPosts: ActionType<{}, Readonly<UniqueArray<ContentPost['props']['options']>['add']>>;
     [key: string]: any;
 }
 

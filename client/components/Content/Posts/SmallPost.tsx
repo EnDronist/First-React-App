@@ -12,7 +12,7 @@ import { ActionData, ActionInput } from '@redux/actions/types';
 import { GroupName, Actions } from '@redux/actions/Posts';
 // Misc
 import classNames from 'classnames';
-import './ContentPost.scss';
+import './SmallPost.scss';
 
 export type State = {
     id: number;

@@ -12,7 +12,7 @@ import { GroupName, Actions } from '@redux/actions/Posts';
 import { WithRequiredKeys } from '@utils/types';
 // Misc
 import classNames from 'classnames';
-import './ContentCreatePost.scss';
+import './SmallPostCreate.scss';
 
 export type State = {
     inputs: {

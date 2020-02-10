@@ -1,5 +1,5 @@
 import { StoreState } from '@redux/State';
-import { combineReducers, ReducersMapObject, Reducer, AnyAction } from 'redux';
+import { combineReducers, ReducersMapObject } from 'redux';
 import authorization from '@redux/reducers/Authorization';
 import postsInfo from '@redux/reducers/Posts';
 import { connectRouter } from 'connected-react-router'

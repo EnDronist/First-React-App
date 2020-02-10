@@ -1,6 +1,6 @@
-import ContentPost, { State as ContentPostState } from '@client/components/Content/ContentPost';
+import { State as PostsState } from '@client/components/Content/Posts/SmallPost';
 import UniqueArray from '@utils/UniqueArray';
-import { RouterState, connectRouter } from 'connected-react-router';
+import { RouterState } from 'connected-react-router';
 
 // Redux store state
 export type StoreState = {
@@ -9,7 +9,7 @@ export type StoreState = {
         loggedIn: boolean;
     };
     postsInfo: {
-        posts: UniqueArray<ContentPostState>;
+        posts: UniqueArray<PostsState>;
     };
     router?: RouterState;
 };

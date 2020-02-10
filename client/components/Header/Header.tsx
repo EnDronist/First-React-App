@@ -8,6 +8,7 @@ import { StoreState } from '@redux/State';
 // Misc
 import classNames from 'classnames';
 import './Header.scss';
+import { Link } from 'react-router-dom';
 
 // State
 export type State = {
@@ -15,8 +16,12 @@ export type State = {
     globalButtons: Array<{
         id: string;
         name: string;
+        url?: string;
         subMenu?: {
-            [key: string]: string;
+            [key: string]: {
+                name: string;
+                url?: string;
+            }
         }
     }>;
 }
@@ -57,12 +62,22 @@ class Header extends React.Component<Props, State> {
                     <ul id="global_buttons" className="d-flex flex-row justify-content-center text-center">
                     { this.state.globalButtons.map((button, i) => 
                         <li id={button.id} key={i.toString()} className="global_button">
-                            <a>{button.name}</a>
+                            { button.url && (
+                                <Link to={button.url}>{button.name}</Link>
+                            )
+                            || (
+                                <a>{button.name}</a>
+                            ) }
                             { button.subMenu && (
                                 <ul className="sub_menu">
                                     { Object.keys(button.subMenu).map((key, i) => 
                                         <li id={key} key={i.toString()} className="global_button">
-                                            <a href="#">{button.subMenu[key]}</a>
+                                            { button.subMenu[key].url && (
+                                                <Link to={button.subMenu[key].url}>{button.subMenu[key].name}</Link>
+                                            )
+                                            || (
+                                                <a>{button.subMenu[key].name}</a>
+                                            ) }
                                         </li>
                                     ) }
                                 </ul>
