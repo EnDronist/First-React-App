@@ -30,6 +30,6 @@ export type AuthorizationCookieAPI = {
     username: string;
     password: string;
 }
-export type Login1AttemptAPI = {
+export type LoginAttemptAPI = {
     res: AuthorizationAPI['res']['success'];
 }
