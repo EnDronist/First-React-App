@@ -128,14 +128,15 @@ export default function (app: Express.Application): void {
             next(); return;
         }
         // Cheking post author
-        var postAuthor: Array<{
+        let result: Array<{
             username: string;
+            is_moderator: boolean;
         }> = await database.query(
             `select username from users where id in (
                 select user_id from posts where id=${reqBody.id}
             );`
         );
-        if (postAuthor[0].username != req.session.authorization.username) {
+        if (!(result[0].username == req.session.authorization.username || req.session.authorization.isModerator)) {
             res.sendStatus(400 /* Bad request */);
             Server.runtimeInfo[req.id].isSending = true;
             next(); return;

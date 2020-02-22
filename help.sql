@@ -7,7 +7,8 @@ create table users(
     id int primary key auto_increment,
     registration_time timestamp not null default current_timestamp,
     username nvarchar(32) not null unique,
-    password nvarchar(64) not null
+    password nvarchar(64) not null,
+    is_moderator boolean not null default false
 );
 create table posts(
     id int primary key auto_increment,

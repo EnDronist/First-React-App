@@ -9,6 +9,8 @@ export type CreatePostAPI = {
         doReturnInfo?: boolean;
     }
     // Data from server to client
+    // Success (200 - OK)
+    // Error (400 - Bad request, 401 - Unauthorized, 500 - Internal server error)
     res: {
         id: number;
     }

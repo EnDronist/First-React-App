@@ -6,6 +6,7 @@ import { RouterState } from 'connected-react-router';
 export type StoreState = {
     authorization: {
         username: string;
+        isModerator: boolean;
         loggedIn: boolean;
     };
     postsInfo: {
@@ -17,6 +18,7 @@ export type StoreState = {
 export const initialState: StoreState = {
     authorization: {
         username: '',
+        isModerator: false,
         loggedIn: false,
     },
     postsInfo: {

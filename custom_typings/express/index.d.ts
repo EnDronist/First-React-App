@@ -6,6 +6,7 @@ declare namespace Express {
         authorization: {
             username: string;
             password: string;
+            isModerator: boolean;
             loggedIn: boolean;
         }
     }

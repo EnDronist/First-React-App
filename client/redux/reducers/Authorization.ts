@@ -13,12 +13,15 @@ export default function reducer(state: StoreState['authorization'] = initialStat
             let data = (action as ActionData<typeof GroupName, 'logIn'>).data;
             return { ...state,
                 username: data.username,
+                isModerator: data.isModerator,
                 loggedIn: true,
             };
         }
         case 'logOut': {
+            let data = (action as ActionData<typeof GroupName, 'logOut'>).data;
             return { ...state,
                 username: '',
+                isModerator: false,
                 loggedIn: false,
             };
         }

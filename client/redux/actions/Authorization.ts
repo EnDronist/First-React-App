@@ -8,17 +8,14 @@ export interface Types {
     logIn: ActionType<
         {
             username: string;
+            isModerator: boolean;
         },
         {
             username: string;
+            isModerator: boolean;
         }
     >;
-    logOut: ActionType<
-        {},
-        {
-            username: string;
-        }
-    >;
+    logOut: ActionType<{}, {}>;
     [key: string]: any;
 }
 
@@ -28,10 +25,8 @@ export const Actions: { [key in keyof Types]: ActionFunction<typeof GroupName, k
         type: 'logIn',
         data: args
     }),
-    logOut: () => ({
+    logOut: (args: ActionInput<typeof GroupName, 'logOut'>) => ({
         type: 'logOut',
-        data: {
-            username: '',
-        }
+        data: args,
     }),
 }

@@ -1,7 +1,7 @@
 // React
 import React, { FormEvent, Dispatch } from 'react';
 // API
-import { verification, LoginAttempt } from '@api/authorization';
+import { verification, LoginAttemptAPI, AuthorizationAPI } from '@api/authorization';
 // Redux
 import { connect } from 'react-redux';
 import { Actions, GroupName } from '@redux/actions/Authorization';
@@ -62,13 +62,13 @@ class Authorization extends React.Component<Props, State> {
             }),
             signType: null,
             inputs: {
-                login: {
-                    name: 'login',
+                username: {
+                    name: 'username',
                     value: '',
                     className: {
                         incorrect: false,
                     },
-                    check: str => verification['login'].test(str),
+                    check: str => verification.username.test(str),
                 },
                 password: {
                     name: 'password',
@@ -76,7 +76,7 @@ class Authorization extends React.Component<Props, State> {
                     className: {
                         incorrect: false,
                     },
-                    check: str => verification['password'].test(str),
+                    check: str => verification.password.test(str),
                 },
             },
             errorDescription: null,
@@ -87,9 +87,11 @@ class Authorization extends React.Component<Props, State> {
     loginAttempt = async () => {
         var responce = await fetch('/authorization', { method: 'GET' });
         if (!responce.ok) return;
-        var data: LoginAttempt['res'] = await responce.json();
-        console.log(data);
-        this.props.logIn({ username: data.username });
+        var resData: LoginAttemptAPI['res'] = await responce.json();
+        this.props.logIn({
+            username: resData.username,
+            isModerator: resData.isModerator,
+        });
     }
 
     changeType = (type: keyof State['signTypes']) => {
@@ -134,10 +136,11 @@ class Authorization extends React.Component<Props, State> {
                 return;
             }
             // Sending data
-            let jsonedData = JSON.stringify({
-                login: inputs.login.value,
+            let sendingData: AuthorizationAPI['req'] = {
+                username: inputs.username.value,
                 password: cryptedPassword,
-            });
+            };
+            let jsonedData = JSON.stringify(sendingData);
             console.log(signType);
             let responce = await fetch(signType.url, {
                 method: signType.type,
@@ -150,24 +153,26 @@ class Authorization extends React.Component<Props, State> {
                 // credentials: 'include',
             });
             // Checking responce for OK
-            console.log(responce);
+            let resData = await responce.json() as AuthorizationAPI['res'];
+            console.log(resData);
             if (responce.ok) {
                 // Logging in
-                this.props.logIn({ username: inputs.login.value });
+                this.props.logIn({
+                    username: inputs.username.value,
+                    isModerator: resData.success.isModerator,
+                });
                 this.setState({ errorDescription: null });
                 return;
             }
             // Else checking form for server-validation errors
             else { // responce.status == 409 /* Conflict */
                 console.log(`Error ${responce.status}${responce.status == 409 ? ': Conflict' : ''}`);
-                var responceBody = await responce.json();
-                console.log(responceBody);
                 Object.keys(inputs).map((element: keyof State['inputs']) => {
-                    if (responceBody[element] != undefined)
+                    if (!resData.error[element])
                         inputs[element].className.incorrect = true;
                 });
-                if (responceBody.errorDescription != undefined) {
-                    this.setState({ errorDescription: responceBody.errorDescription });
+                if (resData.error.errorDescription) {
+                    this.setState({ errorDescription: resData.error.errorDescription });
                 }
                 return;
             }
@@ -192,12 +197,12 @@ class Authorization extends React.Component<Props, State> {
                 <form id="authorization_form" onSubmit={this.onSubmit}>
                     { !this.props.loggedIn ? (
                         <>
-                        {/* Login input */}
+                        {/* Username input */}
                         <div className="d-flex justify-content-between align-items-center">
-                            <span className="login col-4 text-center align-middle">Login</span>
+                            <span className="username col-4 text-center align-middle">Username</span>
                             <div className="col-8 d-flex align-items-center">
-                                <input className={ classNames(inputs['login'].className, "col-12") }
-                                    type="text" name="login" placeholder="username"
+                                <input className={ classNames(inputs.username.className, "col-12") }
+                                    type="text" name="username" placeholder="username"
                                     onChange={this.onChange}
                                 />
                             </div>
@@ -206,7 +211,7 @@ class Authorization extends React.Component<Props, State> {
                         <div className="d-flex justify-content-between align-items-center">
                             <span className="password col-4 text-center align-middle">Password</span>
                             <div className="col-8 d-flex align-items-center">
-                                <input className={ classNames(inputs['password'].className, "col-12") }
+                                <input className={ classNames(inputs.password.className, "col-12") }
                                     type="password" name="password" placeholder="password"
                                     onChange={this.onChange}
                                 />

@@ -18,7 +18,7 @@ class Content extends React.Component<Props, State> {
     render = () => (
         <div id="content">
             <Route path="/posts" exact component={Posts}></Route>
-            <Route path="/" exact><Redirect to="/posts"></Redirect></Route>
+            <Route path="/"><Redirect to="/posts"></Redirect></Route>
         </div>
     )
 }

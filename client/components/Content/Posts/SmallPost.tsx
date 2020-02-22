@@ -72,14 +72,14 @@ class ContentPost extends React.Component<Props, State> {
                     <div className="header flex-grow-1">
                         <h1>{this.state.header}</h1>
                     </div>
-                    { this.state.username == this.props.username && (
+                    { ((this.state.username == this.props.username || !!this.props.isModerator) && (
                         <div className="right delete"
                             onClick={this.delete}
                         >
                             <div className="icon"></div>
                             <span>Delete post</span>
                         </div>
-                    ) }
+                    )) }
                     <div className="right comments ml-auto">{this.state.commentsCount}</div>
                 </header>
                 <p className="description">{this.state.description}</p>
@@ -102,6 +102,7 @@ class ContentPost extends React.Component<Props, State> {
 const mapStateToProps = (state: StoreState) => ({
     // Authorization
     username: state?.authorization?.username,
+    isModerator: state?.authorization?.isModerator,
     // Posts
     posts: state?.postsInfo?.posts,
 });
