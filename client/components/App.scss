@@ -34,6 +34,8 @@ header, nav, article, aside, footer, hgroup, section { display: block }
 * html .clearfix             { zoom: 1 } /* IE6 */
 *:first-child+html .clearfix { zoom: 1 } /* IE7 */
 
+
+
 /* Typography */
 html {
 	animation-name: color-transfusion;
@@ -47,12 +49,14 @@ body {
 	background-color: transparent;
 	text-align: justify;
 	font: 12px/18px Corbel, Arial, Helvetica, sans-serif;
+	p { margin-bottom: 18px }
+	strong { font-weight: bold }
+	em { font-style: italic }
+	h1 { font: 24px/36px "Trebuchet MS", Arial, Helvetica, sans-serif }
+	@import "Header/Header.scss";
+	@import "Aside/Aside.scss";
+	@import "Content/Content.scss";
 }
-
-p { margin-bottom: 18px }
-strong { font-weight: bold }
-em { font-style: italic }
-h1 { font: 24px/36px "Trebuchet MS", Arial, Helvetica, sans-serif }
 
 // Animations
 @keyframes color-transfusion {

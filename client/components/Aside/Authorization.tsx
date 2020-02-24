@@ -11,7 +11,6 @@ import { StoreState } from '@redux/State';
 import { ValueOf } from '@utils/types';
 // Misc
 import classNames from 'classnames';
-import './Authorization.scss';
 
 // State
 export type State = {

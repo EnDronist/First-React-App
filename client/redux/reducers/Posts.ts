@@ -16,6 +16,24 @@ export default function reducer(state: StoreState['postsInfo'] = initialState.po
                 posts: new UniqueArray(data),
             };
         }
+        case 'setPostControlType': {
+            let data = (action as ActionData<typeof GroupName, 'setPostControlType'>).data;
+            return { ...state,
+                postControl: { ...state.postControl,
+                    type: data
+                }
+            }
+        }
+        case 'setPostControlInputs': {
+            let data = (action as ActionData<typeof GroupName, 'setPostControlInputs'>).data;
+            return { ...state,
+                postControl: { ...state.postControl,
+                    inputs: { ...state.postControl.inputs,
+                        ...data
+                    }
+                }
+            }
+        }
         default: return state;
     }
 }

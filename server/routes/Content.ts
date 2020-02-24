@@ -5,7 +5,7 @@ import asyncHandler from 'express-async-handler';
 
 import validate from '@utils/validate';
 import { PostsAPI, reqVerification as contentVerification } from '@api/content/content';
-import { CreatePostAPI, verification as createPostVerification } from '@api/content/create-post';
+import { PostControlAPI, verification as createPostVerification } from '@api/content/post-control';
 import { DeletePostAPI, verification as deletePostVerification } from '@api/content/delete-post';
 
 // Data from MySQL (raw)
@@ -55,14 +55,14 @@ export default function (app: Express.Application): void {
                     month: +dateArray[1],
                     day: +dateArray[2],
                 },
-                tags: value.tags.toString('utf-8').split(' '),
+                tags: value.tags.toString('utf-8'),
             };
         });
         res.send(resBody);
         Server.runtimeInfo[req.id].isSending = true;
         next();
     }));
-    app.post('/api/create-post', handler(async (req: Request, res: Response, next: NextFunction) => {
+    app.post(['/api/create-post', '/api/update-post'], handler(async (req: Request, res: Response, next: NextFunction) => {
         // Authorization check
         if (!req.session.authorization.loggedIn) {
             res.sendStatus(401 /* Unauthorized */);
@@ -70,40 +70,80 @@ export default function (app: Express.Application): void {
             next(); return;
         }
         // Body validation
-        const reqBody = req.body as CreatePostAPI['req'];
-        if (!validate(reqBody, createPostVerification)) {
+        const reqData = req.body as PostControlAPI['req'];
+        if (!validate(reqData, createPostVerification)) {
             res.sendStatus(400 /* Bad request */);
             Server.runtimeInfo[req.id].isSending = true;
             next(); return;
         }
         // Preparation data to insert in database
-        Object.assign(reqBody, {
-            header: reqBody.header.replace(/\\/g, '\\\\').replace(/"/g, '\\"'),
-            description: reqBody.description.replace(/\\/g, '\\\\').replace(/"/g, '\\"'),
+        Object.assign(reqData, {
+            header: reqData.header.replace(/\\/g, '\\\\').replace(/"/g, '\\"'),
+            description: reqData.description.replace(/\\/g, '\\\\').replace(/"/g, '\\"'),
         });
-        // Creating post
+        // Control post
         let queryComplete: boolean = true;
-        await database.query(
-            `insert posts(header, description, tags, comments_count, user_id)
-                select "${reqBody.header}", "${reqBody.description}", "${reqBody.tags}",
-                ${Math.floor(Math.random() * 100)}, id
-                from users where username="${req.session.authorization.username}";`
-        ).catch(err => { queryComplete = false; });
+        if (req.url == '/api/create-post') {
+            // Creating post
+            await database.query(
+                `insert posts(header, description, tags, comments_count, user_id)
+                    select "${reqData.header}", "${reqData.description}", "${reqData.tags}",
+                    ${Math.floor(Math.random() * 100)}, id
+                    from users where username="${req.session.authorization.username}";`
+            ).catch(() => { queryComplete = false });
+        }
+        else if (req.url == '/api/update-post') {
+            // Checking post author
+            let result: Array<{
+                username: string;
+                version: number;
+            }> = await database.query(
+                `select users.username as username, posts.version as version from posts
+                    join users on posts.user_id = users.id
+                    where posts.id = ${reqData.id};`
+            );
+            const auth = req.session.authorization;
+            if (!(result[0].username == auth.username || auth.isModerator)) {
+                res.sendStatus(401 /* Unauthorized */);
+                Server.runtimeInfo[req.id].isSending = true;
+                next(); return;
+            }
+            // Copying last post version to deleted posts
+            await database.query(
+                `insert deleted_posts(date, header, description, comments_count, tags, user_id, version)
+                    select date, header, description, comments_count, tags, user_id, version from posts
+                    where id = ${reqData.id};`
+            );
+            // Changing post and increasing version
+            await database.query(
+                `update posts
+                    set
+                        header = "${reqData.header}",
+                        description = "${reqData.description}",
+                        tags = "${reqData.tags}",
+                        version = version + 1
+                    where id = ${reqData.id};`
+            );
+        }
         if (!queryComplete) {
             res.sendStatus(500 /* Internal server error */);
             Server.runtimeInfo[req.id].isSending = true;
             next(); return;
         }
         // Getting post ID
-        let responce: CreatePostAPI['res'] = {
-            id: (await database.query(
-                    `select last_insert_id();`
-                ))[0]['last_insert_id()'],
+        let responce: PostControlAPI['res'] = {
+            id: (req.url == '/api/create-post')
+                ? (await database.query(`select last_insert_id();`))[0]['last_insert_id()']
+                : (req.url == '/api/update-post')
+                ? reqData.id : null,
         }
         // Event announcement
-        console.log(`Post #${`${responce.id}`.blue} was created by ${req.session.authorization.username.green}`);
+        Array(
+            `Post #${`${responce.id}`.blue} was ${req.url == '/api/create-post' ? 'created' : 'updated'}`,
+            ` by ${req.session.authorization.username.green}\n`,
+        ).map(elem => process.stdout.write(elem));
         // Responce
-        if (reqBody.doReturnInfo) {
+        if (reqData.doReturnInfo) {
             res.send(responce);
             Server.runtimeInfo[req.id].isSending = true;
             next(); return;
@@ -121,8 +161,8 @@ export default function (app: Express.Application): void {
             next(); return;
         }
         // Body validation
-        let reqBody = req.body as DeletePostAPI['req'];
-        if (!validate(reqBody, deletePostVerification)) {
+        let reqData = req.body as DeletePostAPI['req'];
+        if (!validate(reqData, deletePostVerification)) {
             res.sendStatus(400 /* Bad request */);
             Server.runtimeInfo[req.id].isSending = true;
             next(); return;
@@ -130,22 +170,23 @@ export default function (app: Express.Application): void {
         // Cheking post author
         let result: Array<{
             username: string;
-            is_moderator: boolean;
         }> = await database.query(
             `select username from users where id in (
-                select user_id from posts where id=${reqBody.id}
+                select user_id from posts where id=${reqData.id}
             );`
         );
-        if (!(result[0].username == req.session.authorization.username || req.session.authorization.isModerator)) {
-            res.sendStatus(400 /* Bad request */);
+        const auth = req.session.authorization;
+        if (!(result[0].username == auth.username || auth.isModerator)) {
+            res.sendStatus(401 /* Unauthorized */);
             Server.runtimeInfo[req.id].isSending = true;
             next(); return;
         }
         // Replacing post in deleted_posts
         let responce: boolean = true;
         await database.query(
-            `insert deleted_posts(date, header, description, comments_count, tags, user_id)
-                select date, header, description, comments_count, tags, user_id from posts where id=${reqBody.id};`
+            `insert deleted_posts(date, header, description, comments_count, tags, user_id, version)
+                select date, header, description, comments_count, tags, user_id, version from posts
+                where id=${reqData.id};`
         )
         .catch(err => { console.log(err); responce = false });
         if (!responce) {
@@ -155,10 +196,10 @@ export default function (app: Express.Application): void {
         }
         // Deleting post
         await database.query(
-            `delete from posts where id=${reqBody.id};`
+            `delete from posts where id=${reqData.id};`
         );
         // Event announcement
-        console.log(`Post #${`${reqBody.id}`.blue} was deleted by ${req.session.authorization.username.green}`);
+        console.log(`Post #${`${reqData.id}`.blue} was deleted by ${req.session.authorization.username.green}`);
         // Completion
         res.sendStatus(200);
         Server.runtimeInfo[req.id].isSending = true;

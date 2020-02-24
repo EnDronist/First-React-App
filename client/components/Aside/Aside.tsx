@@ -3,7 +3,6 @@ import React from 'react';
 import Authorization from './Authorization';
 // Misc
 import classNames from 'classnames';
-import './Aside.scss';
 
 export type State = {};
 

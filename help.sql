@@ -1,33 +1,34 @@
 /* Creating database */
-create database if not exists nodejs;
-use nodejs;
+create database if not exists `nodejs`;
+use `nodejs`;
 
 /* Creating tables */
 create table users(
-    id int primary key auto_increment,
-    registration_time timestamp not null default current_timestamp,
-    username nvarchar(32) not null unique,
-    password nvarchar(64) not null,
-    is_moderator boolean not null default false
+    `id` int primary key auto_increment,
+    `registration_time` timestamp not null default current_timestamp,
+    `username` nvarchar(32) not null unique,
+    `password` nvarchar(64) not null,
+    `is_moderator` boolean not null default false
 );
-create table posts(
-    id int primary key auto_increment,
-    date timestamp not null default current_timestamp,
-    header nvarchar(128) not null,
-    description blob not null,
-    comments_count int not null,
-    tags blob not null,
-    user_id int not null,
-    constraint user_ref
-        foreign key (user_id)
-        references users(id)
+create table `posts`(
+    `id` int primary key auto_increment,
+    `date` timestamp not null default current_timestamp,
+    `header` nvarchar(128) not null,
+    `description` blob not null,
+    `comments_count` int not null,
+    `tags` blob not null,
+    `user_id` int not null,
+    `version` int not null default 1
+    -- constraint `user_ref`
+    --     foreign key (`user_id`)
+    --     references `users`(`id`)
 );
 
 /* Setting constraints */
-alter table posts
-    add constraint user_ref
-    foreign key (user_id)
-    references users(id);
+alter table `posts`
+    add constraint `user_ref`
+        foreign key (`user_id`)
+        references `users`(`id`);
 
 /* Additional */
-create table deleted_posts like posts;
+create table `deleted_posts` like `posts`;

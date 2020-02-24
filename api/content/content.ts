@@ -22,7 +22,7 @@ export type PostsAPI = {
             username: string;
             commentsCount: number;
             date: { year: number, month: number, day: number };
-            tags: Array<string>;
+            tags: string;
         }>
     }
 }

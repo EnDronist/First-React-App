@@ -12,7 +12,7 @@ import { ActionData, ActionInput } from '@redux/actions/types';
 import { GroupName, Actions } from '@redux/actions/Posts';
 // Misc
 import classNames from 'classnames';
-import './SmallPost.scss';
+import { PostsControlTypes } from './PostsControl';
 
 export type State = {
     id: number;
@@ -25,7 +25,7 @@ export type State = {
         month: number;
         day: number;
     };
-    tags: string[];
+    tags: string;
 }
 
 type Props = ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchToProps> & {
@@ -58,6 +58,17 @@ class ContentPost extends React.Component<Props, State> {
         this.props.setPosts(this.props.posts);
     }
 
+    change = () => {
+        // Filling post control with post data
+        this.props.setPostControlType(PostsControlTypes.Change);
+        this.props.setPostControlInputs({
+            id: this.state.id,
+            header: this.state.header,
+            description: this.state.description,
+            tags: this.state.tags,
+        });
+    };
+
     render = () => {
         return (
             <article className="post">
@@ -69,25 +80,33 @@ class ContentPost extends React.Component<Props, State> {
                             <span className="month">{postsInfo.monthEng[this.state.date.month]}</span>
                         </div>
                     </div>
-                    <div className="header flex-grow-1">
+                    <div className="header d-flex mr-auto">
                         <h1>{this.state.header}</h1>
                     </div>
-                    { ((this.state.username == this.props.username || !!this.props.isModerator) && (
-                        <div className="right delete"
-                            onClick={this.delete}
-                        >
-                            <div className="icon"></div>
-                            <span>Delete post</span>
-                        </div>
-                    )) }
-                    <div className="right comments ml-auto">{this.state.commentsCount}</div>
+                    <div className="right d-flex flex-row">
+                        { ((this.state.username == this.props.username || !!this.props.isModerator) && (<>
+                            <div className="delete clickable"
+                                onClick={this.delete}
+                            >
+                                <div className="icon"></div>
+                                <span>Delete post</span>
+                            </div>
+                            <div className="change clickable"
+                                onClick={this.change}
+                            >
+                                <div className="icon"></div>
+                                <span>Change post</span>
+                            </div>
+                        </>)) }
+                        <div className="comments">{this.state.commentsCount}</div>
+                    </div>
                 </header>
                 <p className="description">{this.state.description}</p>
                 <footer>
                     <em>Written by: </em><strong>{this.state.username}</strong>
                     <span className="new_line">
                         <em>Tags: </em>
-                        { this.state.tags.map((value, i) => (
+                        { this.state.tags.split(' ').map((value, i) => (
                             <a key={i} href="#" className="tags">{value}</a>
                         )) }
                     </span>
@@ -105,11 +124,17 @@ const mapStateToProps = (state: StoreState) => ({
     isModerator: state?.authorization?.isModerator,
     // Posts
     posts: state?.postsInfo?.posts,
+    postControl: state?.postsInfo?.postControl,
 });
 
 // Dispatch to Props
 const mapDispatchToProps = (dispatch: Dispatch<ActionData<typeof GroupName>>) => ({
+    // Posts
     setPosts: (args: ActionInput<typeof GroupName, 'setPosts'>) => dispatch(Actions.setPosts(args)),
+    setPostControlType: (args: ActionInput<typeof GroupName, 'setPostControlType'>) =>
+        dispatch(Actions.setPostControlType(args)),
+    setPostControlInputs: (args: ActionInput<typeof GroupName, 'setPostControlInputs'>) =>
+        dispatch(Actions.setPostControlInputs(args)),
 });
 
 // React-Redux-component

@@ -7,7 +7,6 @@ import { connect } from 'react-redux';
 import { StoreState } from '@redux/State';
 // Misc
 import classNames from 'classnames';
-import './Header.scss';
 import { Link } from 'react-router-dom';
 
 // State

@@ -1,4 +1,4 @@
-export default class UniqueArray<T> extends Array {
+export default class UniqueArray<T> extends Array<T> {
     // Fields
     private _counter: number = 0;
     /**
@@ -57,7 +57,7 @@ export default class UniqueArray<T> extends Array {
         return super.unshift(...items);
     }
     // Remove
-    remove(start: number, deleteCount: number = 1): Array<number> {
+    remove(start: number, deleteCount: number = 1): Array<T> {
         this._ids.splice(start, deleteCount);
         return super.splice(start, deleteCount);
     }

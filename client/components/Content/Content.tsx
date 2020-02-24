@@ -4,7 +4,6 @@ import { Route, Redirect } from 'react-router-dom';
 import Posts from '@client/components/Content/Posts/Posts';
 // Misc
 import classNames from 'classnames';
-import './Content.scss';
 
 type State = {};
 

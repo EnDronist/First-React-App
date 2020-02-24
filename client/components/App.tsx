@@ -6,6 +6,7 @@ import Content from './Content/Content'
 import Aside from './Aside/Aside'
 // Misc
 import classNames from 'classnames';
+// Main sass file
 import './App.scss'
 
 type State = {}

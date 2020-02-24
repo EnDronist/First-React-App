@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import SmallPost from './SmallPost';
-import SmallPostCreate from './SmallPostCreate';
+import PostsControl from './PostsControl';
 // API
 import { PostsAPI, urlVerification, urlDefaultVerification } from '@api/content/content';
 // JSON
@@ -19,7 +19,6 @@ import getRangeArray from '@utils/range-array';
 import validate from '@utils/validate';
 // Misc
 import classNames from 'classnames';
-import './Posts.scss';
 
 export type State = {
     postsOptions: {
@@ -257,7 +256,7 @@ class Content extends React.Component<Props, State> {
                 <SmallPost key={store.posts.ids[i]} options={elem} />
             ) }
             { store.loggedIn && (
-                <SmallPostCreate />
+                <PostsControl />
             ) }
         </>);
     }

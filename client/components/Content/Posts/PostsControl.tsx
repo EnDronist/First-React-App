@@ -1,7 +1,8 @@
 // React
 import React, { ChangeEvent } from 'react';
 // API
-import { verification, CreatePostAPI } from '@api/content/create-post';
+import { PostControlAPI } from '@api/content/post-control';
+import { verification } from '@api/content/post-control';
 // Redux
 import { connect } from 'react-redux';
 import { Dispatch } from 'redux';
@@ -12,13 +13,15 @@ import { GroupName, Actions } from '@redux/actions/Posts';
 import { WithRequiredKeys } from '@utils/types';
 // Misc
 import classNames from 'classnames';
-import './SmallPostCreate.scss';
+
+export enum PostsControlTypes {
+    Create = 'Create',
+    Change = 'Change',
+}
 
 export type State = {
     inputs: {
         [key in keyof WithRequiredKeys<typeof verification>]: {
-            name: key;
-            value: string;
             className: {
                 incorrect: boolean;
                 [key: string]: any;
@@ -26,6 +29,7 @@ export type State = {
             check: (str: string) => boolean;
         };
     };
+    submitType: { [key in PostsControlTypes]: () => void }
 }
 
 type Props = ReturnType<typeof mapStateToProps> & ReturnType<typeof mapDispatchToProps>;
@@ -36,8 +40,6 @@ class ContentCreatePost extends React.Component<Props, State> {
         this.state = {
             inputs: {
                 header: {
-                    name: 'header',
-                    value: '',
                     className: {
                         incorrect: false,
                         'form-control': true,
@@ -45,8 +47,6 @@ class ContentCreatePost extends React.Component<Props, State> {
                     check: str => verification['header'](str),
                 },
                 description: {
-                    name: 'description',
-                    value: '',
                     className: {
                         incorrect: false,
                         'form-control': true,
@@ -54,25 +54,26 @@ class ContentCreatePost extends React.Component<Props, State> {
                     check: str => verification['description'](str),
                 },
                 tags: {
-                    name: 'tags',
-                    value: '',
                     className: {
                         incorrect: false,
                         'form-control': true,
                     },
                     check: str => verification['tags'](str),
                 },
+            },
+            submitType: {
+                Create: this.createPost,
+                Change: this.updatePost,
             }
         }
     }
 
-    sendPost = async () => {
+    createPost = async () => {
         // Fetching posts
-        const inputs = this.state.inputs;
-        var reqData: CreatePostAPI['req'] = {
-            header: inputs.header.value,
-            description: inputs.description.value,
-            tags: inputs.tags.value,
+        var reqData: PostControlAPI['req'] = {
+            header: this.props.postControl.inputs.header,
+            description: this.props.postControl.inputs.description,
+            tags: this.props.postControl.inputs.tags,
             doReturnInfo: true,
         };
         var responce = await fetch('/api/create-post', {
@@ -86,29 +87,62 @@ class ContentCreatePost extends React.Component<Props, State> {
         if (!responce.ok) return;
         console.log('Post created!');
         // Adding new post to page
-        let data = await responce.json() as CreatePostAPI['res'];
+        let data = await responce.json() as PostControlAPI['res'];
         const posts = this.props.posts;
         let currentDate = new Date();
         posts.push({
             id: data.id,
             header: reqData.header,
             description: reqData.description,
-            tags: reqData.tags.split(' '),
+            tags: reqData.tags,
             date: {
                 year: currentDate.getFullYear(),
                 month: currentDate.getMonth(),
-                day: currentDate.getDay(),
+                day: currentDate.getDate(),
             },
             commentsCount: 0,
             username: this.props.username,
         });
         this.props.setPosts(this.props.posts);
     }
+
+    updatePost = async () => {
+        // Fetching posts
+        const inputs = this.state.inputs;
+        var reqData: PostControlAPI['req'] = {
+            id: this.props.postControl.inputs.id,
+            header: this.props.postControl.inputs.header,
+            description: this.props.postControl.inputs.description,
+            tags: this.props.postControl.inputs.tags,
+            doReturnInfo: true,
+        };
+        var responce = await fetch('/api/update-post', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(reqData),
+        });
+        if (!responce.ok) return;
+        console.log('Post updated!');
+        // Changing post on page
+        const posts = this.props.posts;
+        const post = posts.find(elem => elem.id == reqData.id);
+        if (!post) return;
+        Object.assign<typeof post, Partial<typeof post>>(post, {
+            header: reqData.header,
+            description: reqData.description,
+            tags: reqData.tags,
+        });
+        this.props.setPosts(this.props.posts);
+    }
     
     onChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const input = this.state.inputs[event.target.name as keyof State['inputs']];
+        const inputName = event.target.name as keyof State['inputs'];
+        const input = this.state.inputs[inputName];
         input.className.incorrect = !(input.check(event.target.value) || event.target.value == '');
-        input.value = event.target.value;
+        this.props.setPostControlInputs({ [inputName]: event.target.value });
         this.forceUpdate();
     }
 
@@ -117,23 +151,27 @@ class ContentCreatePost extends React.Component<Props, State> {
         return (
             <article id="create_post">
                 <form>
+                    <header><h1>{this.props.postControl.type}</h1></header>
                     <div className="form-group">
-                        <label htmlFor="headerInput">Header</label>
-                        <input id="headerInput" className={classNames(inputs.header.className)} onChange={this.onChange}
-                            type="text" name="header" placeholder="Enter header"></input>
+                        <label htmlFor="header_input">Header</label>
+                        <input id="header_input" className={classNames(inputs.header.className)}
+                            onChange={this.onChange} type="text" name="header" placeholder="Enter header"
+                            value={this.props.postControl.inputs.header}></input>
                     </div>
                     <div className="form-group">
-                        <label htmlFor="descriptionInput">Description</label>
-                        <input id="descriptionInput" className={classNames(inputs.description.className)} onChange={this.onChange}
-                            type="text" name="description" placeholder="Enter description"></input>
+                        <label htmlFor="description_input">Description</label>
+                        <input id="description_input" className={classNames(inputs.description.className)}
+                            onChange={this.onChange} type="text" name="description" placeholder="Enter description"
+                            value={this.props.postControl.inputs.description}></input>
                     </div>
                     <div className="form-group">
-                        <label htmlFor="tagsInput">Tags</label>
-                        <input id="tagsInput" className={classNames(inputs.tags.className)} onChange={this.onChange}
-                            type="text" name="tags" placeholder="Enter tags"></input>
+                        <label htmlFor="tags_input">Tags</label>
+                        <input id="tags_input" className={classNames(inputs.tags.className)}
+                            onChange={this.onChange} type="text" name="tags" placeholder="Enter tags"
+                            value={this.props.postControl.inputs.tags}></input>
                     </div>
-                    <button type="button" className="btn btn-primary" onClick={this.sendPost}>
-                        Create post on behalf of <b>{this.props.username}</b>
+                    <button type="button" className="btn btn-primary" onClick={this.state.submitType[this.props.postControl.type]}>
+                        {this.props.postControl.type} post on behalf of <b>{this.props.username}</b>
                     </button>
                 </form>
             </article>
@@ -147,11 +185,14 @@ const mapStateToProps = (state: StoreState) => ({
     username: state?.authorization?.username,
     // Posts
     posts: state?.postsInfo?.posts,
+    postControl: state?.postsInfo?.postControl,
 });
 
 // Dispatch to Props
 const mapDispatchToProps = (dispatch: Dispatch<ActionData<typeof GroupName>>) => ({
     setPosts: (args: ActionInput<typeof GroupName, 'setPosts'>) => dispatch(Actions.setPosts(args)),
+    setPostControlInputs: (args: ActionInput<typeof GroupName, 'setPostControlInputs'>) =>
+        dispatch(Actions.setPostControlInputs(args)),
 });
 
 // React-Redux-component
